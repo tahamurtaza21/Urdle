@@ -1,0 +1,209 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121213;
+    color: white;
+    direction: rtl;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    margin: 20px 0;
+    color: #ffffff;
+    text-align: center;
+}
+
+#guess-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    gap: clamp(4px, 2vw, 8px);
+    margin-bottom: 20px;
+    flex-direction: row-reverse; /* important: rightmost first */
+    width: 100%;
+    max-width: 300px;
+}
+.letter-input {
+    width: clamp(40px, 12vw, 50px);
+    height: clamp(40px, 12vw, 50px);
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid #3a3a3c;
+    background-color: #121213;
+    color: white;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+    flex: 0 0 auto;
+}
+
+.letter-input:focus {
+    border-color: #565758;
+}
+
+.letter-input:not(:placeholder-shown) {
+    border-color: #565758;
+}
+
+.submit-btn {
+    background-color: #538d4e;
+    color: white;
+    border: none;
+    padding: clamp(10px, 3vw, 12px) clamp(20px, 6vw, 24px);
+    font-size: clamp(14px, 4vw, 16px);
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-height: 44px; /* Minimum touch target for mobile */
+    min-width: 100px;
+}
+
+.submit-btn:hover {
+    background-color: #4a7c44;
+}
+
+.submit-btn:active {
+    background-color: #3e6b37;
+}
+
+.board {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: clamp(4px, 2vw, 8px);
+    margin-bottom: clamp(4px, 2vw, 8px);
+    flex-direction: row-reverse; /* rightmost first */
+}
+
+.cell {
+    width: clamp(40px, 12vw, 50px);
+    height: clamp(40px, 12vw, 50px);
+    border: 2px solid #3a3a3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: bold;
+    background-color: #121213;
+    color: white;
+    border-radius: 4px;
+    flex: 0 0 auto;
+}
+
+.cell.correct {
+    background-color: #538d4e;
+    border-color: #538d4e;
+}
+
+.cell.present {
+    background-color: #b59f3b;
+    border-color: #b59f3b;
+}
+
+.cell.absent {
+    background-color: #3a3a3c;
+    border-color: #3a3a3c;
+}
+
+/* Mobile-specific adjustments */
+@media screen and (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        margin: 10px 0;
+    }
+
+    .input-container {
+        gap: 6px;
+    }
+
+    .row {
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+
+    .submit-btn {
+        margin-top: 10px;
+    }
+}
+
+/* Very small screens */
+@media screen and (max-width: 320px) {
+    .input-container,
+    .board {
+        max-width: 250px;
+    }
+
+    .letter-input,
+    .cell {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+
+    .input-container {
+        gap: 4px;
+    }
+
+    .row {
+        gap: 4px;
+    }
+}
+
+
+/* Landscape mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    body {
+        justify-content: flex-start;
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin: 5px 0;
+    }
+
+    #guess-form {
+        margin-bottom: 15px;
+    }
+}

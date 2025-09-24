@@ -6,3 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UrduWordRepository extends JpaRepository<UrduWord, Long> {
     boolean existsByWord(String word);
 }
+
+

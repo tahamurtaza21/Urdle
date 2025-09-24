@@ -207,3 +207,53 @@ h1 {
         margin-bottom: 15px;
     }
 }
+
+
+.keyboard {
+    margin-top: 20px;
+    user-select: none;
+    width: 100%;
+    max-width: 500px;
+}
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.key {
+    flex: 1;
+    max-width: 40px;
+    padding: 10px;
+    font-size: 18px;
+    font-family: 'Noto Nastaliq Urdu', Arial, sans-serif;
+    background: #3a3a3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.key:active {
+    background: #565758;
+}
+.key.action {
+    flex: 1.5; /* Make backspace & enter wider */
+    max-width: 70px;
+    background: #b59f3b;
+    font-weight: bold;
+}
+.key.correct {
+    background-color: #538d4e;
+    border-color: #538d4e;
+}
+.key.present {
+    background-color: #b59f3b;
+    border-color: #b59f3b;
+}
+.key.absent {
+    background-color: #3a3a3c;
+    border-color: #3a3a3c;
+    color: #888;
+}

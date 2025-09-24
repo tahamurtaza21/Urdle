@@ -1,4 +1,4 @@
-// Injected from Spring Boot
+// Word from backend (via Thymeleaf)
 const word = /*[[${word}]]*/ "کتاب";
 const board = document.getElementById("board");
 
@@ -16,32 +16,40 @@ for (let i = 0; i < 6; i++) {
 
 let currentRow = 0;
 const letterInputs = document.querySelectorAll('.letter-input');
+let activeIndex = letterInputs.length - 1; // start at rightmost
 
-// Start focus on rightmost input
-letterInputs[letterInputs.length - 1].focus();
+// Disable manual typing
+letterInputs.forEach(input => {
+    input.addEventListener('keydown', e => e.preventDefault());
+    input.addEventListener('input', e => e.preventDefault());
+});
 
-// RTL navigation
-letterInputs.forEach((input, i) => {
-    input.addEventListener('input', () => {
-        if (input.value.length === 1 && i > 0) {
-            letterInputs[i - 1].focus(); // go left
-        }
-    });
+// Handle on-screen keyboard
+const keys = document.querySelectorAll('.key');
+keys.forEach(key => {
+    key.addEventListener('click', () => {
+        const action = key.dataset.action;
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace') {
-            if (input.value === '' && i < letterInputs.length - 1) {
-                letterInputs[i + 1].focus(); // go right on backspace
+        if (action === "backspace") {
+            if (letterInputs[activeIndex].value === '' && activeIndex < letterInputs.length - 1) {
+                activeIndex++;
             }
+            letterInputs[activeIndex].value = '';
+        } else if (action === "enter") {
+            document.getElementById("guess-form").dispatchEvent(new Event('submit'));
+        } else {
+            // Insert Urdu letter
+            letterInputs[activeIndex].value = key.textContent;
+            if (activeIndex > 0) activeIndex--; // move left
         }
     });
 });
 
-// Handle submit
+// Handle guess submission
 document.getElementById("guess-form").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    // Collect inputs right→left
+    // Collect values RTL (rightmost → leftmost)
     let guess = '';
     letterInputs.forEach(inp => guess += inp.value.trim());
 
@@ -61,5 +69,5 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
 
     currentRow++;
     letterInputs.forEach(inp => inp.value = '');
-    letterInputs[letterInputs.length - 1].focus(); // restart at rightmost
+    activeIndex = letterInputs.length - 1; // reset to rightmost
 });

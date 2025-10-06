@@ -49,21 +49,28 @@ keys.forEach(key => {
 document.getElementById("guess-form").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    // Collect values RTL (rightmost → leftmost)
+    // ✅ Build the guess correctly from rightmost → leftmost
     let guess = '';
-    letterInputs.forEach(inp => guess += inp.value.trim());
+    for (let i = letterInputs.length - 1; i >= 0; i--) {
+        guess += letterInputs[i].value.trim();
+    }
 
     if (guess.length !== 5) return;
 
     const row = board.children[currentRow].children;
+
+    // ✅ Now compare and fill the board also right-to-left
     for (let i = 0; i < 5; i++) {
-        row[i].textContent = guess[i];
-        if (guess[i] === word[i]) {
-            row[i].classList.add("correct");
-        } else if (word.includes(guess[i])) {
-            row[i].classList.add("present");
+        const letter = guess[i];
+        const cellIndex = 4 - i; // rightmost first visually
+        row[cellIndex].textContent = letter;
+
+        if (letter === word[i]) {
+            row[cellIndex].classList.add("correct");
+        } else if (word.includes(letter)) {
+            row[cellIndex].classList.add("present");
         } else {
-            row[i].classList.add("absent");
+            row[cellIndex].classList.add("absent");
         }
     }
 

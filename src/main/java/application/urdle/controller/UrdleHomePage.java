@@ -27,6 +27,7 @@ public class UrdleHomePage {
     @GetMapping("/")
     public String getHomePage(Model model) {
         model.addAttribute("word", getTodaysWord());
+        System.out.println(getTodaysWord());
         return "index";
     }
 

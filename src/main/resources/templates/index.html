@@ -87,6 +87,11 @@
 
 </div>
 
-<script th:src="@{/javascript/word.js}"></script>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  const word = /*[[${word}]]*/ "آبادی";
+  /*]]>*/
+</script>
+<script src="/javascript/word.js"></script>
 </body>
 </html>

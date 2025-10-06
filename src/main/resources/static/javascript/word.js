@@ -1,5 +1,3 @@
-// Word from backend (via Thymeleaf)
-const word = /*[[${word}]]*/ "آبادی";
 const board = document.getElementById("board");
 
 // --- Build 6 rows × 5 cells dynamically ---
@@ -61,9 +59,14 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
     if (guess.length !== 5) return;
 
     const row = board.children[currentRow].children;
-    let rowPattern = '';
 
     // Compare and colorize
+    // --- Proper Wordle duplicate-safe comparison ---
+    const rowLetters = [];
+    const remaining = word.split(''); // copy of target letters
+    let rowPattern = '';
+
+// Step 1: Mark greens first
     for (let i = 0; i < 5; i++) {
         const letter = guess[i];
         const cellIndex = 4 - i; // rightmost first visually
@@ -72,14 +75,31 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
         if (letter === word[i]) {
             row[cellIndex].classList.add("correct");
             rowPattern += '🟩';
-        } else if (word.includes(letter)) {
-            row[cellIndex].classList.add("present");
-            rowPattern += '🟨';
+            remaining[i] = null; // remove used letter
         } else {
-            row[cellIndex].classList.add("absent");
-            rowPattern += '⬜';
+            rowPattern += '?'; // temporary placeholder
+            rowLetters.push({ letter, cellIndex, index: i });
         }
     }
+
+// Step 2: Mark yellows / grays for the rest
+    for (const { letter, cellIndex, index } of rowLetters) {
+        if (remaining.includes(letter)) {
+            row[cellIndex].classList.add("present");
+            rowPattern = replaceAt(rowPattern, index, '🟨');
+            remaining[remaining.indexOf(letter)] = null; // remove once
+        } else {
+            row[cellIndex].classList.add("absent");
+            rowPattern = replaceAt(rowPattern, index, '⬜');
+        }
+    }
+
+// Helper to replace char at specific index
+    function replaceAt(str, index, replacement) {
+        return str.substring(0, index) + replacement + str.substring(index + 1);
+    }
+
+
 
     resultsGrid.push(rowPattern);
 

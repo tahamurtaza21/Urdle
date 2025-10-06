@@ -44,26 +44,26 @@ public class UrduWordsGenerator {
 
     };
 
-    public static void main(String[] args) {
-        try {
-            UrduWordsGenerator fetcher = new UrduWordsGenerator();
-            List<String> fiveLetterWords = fetcher.fetchFiveLetterUrduWords();
-            fetcher.saveToJson(fiveLetterWords, "urdu_4_letter_words.json");
-
-            System.out.println("✅ JSON file generated!");
-            System.out.println("Total 4-letter Urdu words: " + fiveLetterWords.size());
-
-            // Show first 15 words as example
-            System.out.println("\nExample words:");
-            for (int i = 0; i < Math.min(15, fiveLetterWords.size()); i++) {
-                System.out.println("  " + fiveLetterWords.get(i));
-            }
-
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args) {
+//        try {
+//            UrduWordsGenerator fetcher = new UrduWordsGenerator();
+//            List<String> fiveLetterWords = fetcher.fetchFiveLetterUrduWords();
+//            fetcher.saveToJson(fiveLetterWords, "urdu_4_letter_words.json");
+//
+//            System.out.println("✅ JSON file generated!");
+//            System.out.println("Total 4-letter Urdu words: " + fiveLetterWords.size());
+//
+//            // Show first 15 words as example
+//            System.out.println("\nExample words:");
+//            for (int i = 0; i < Math.min(15, fiveLetterWords.size()); i++) {
+//                System.out.println("  " + fiveLetterWords.get(i));
+//            }
+//
+//        } catch (Exception e) {
+//            System.err.println("Error: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
 
     public List<String> fetchFiveLetterUrduWords() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();

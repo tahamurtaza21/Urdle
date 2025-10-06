@@ -1,5 +1,5 @@
 // Word from backend (via Thymeleaf)
-const word = /*[[${word}]]*/ "کتاب";
+const word = /*[[${word}]]*/ "آبادی";
 const board = document.getElementById("board");
 
 // Build 6 rows × 5 cells

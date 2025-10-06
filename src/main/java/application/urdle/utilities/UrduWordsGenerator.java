@@ -24,8 +24,8 @@ import org.json.JSONObject;
 public class UrduWordsGenerator {
 
     private static final String BASE_URL = "https://en.wiktionary.org/w/api.php";
-    private static final int MAX_PAGES = 20;
-    private static final int WORD_LENGTH = 5;
+    private static final int MAX_PAGES = 100;
+    private static final int WORD_LENGTH = 4;
 
     // Multiple categories to fetch from - Add more to get even more words!
     private static final String[] CATEGORIES = {
@@ -48,10 +48,10 @@ public class UrduWordsGenerator {
         try {
             UrduWordsGenerator fetcher = new UrduWordsGenerator();
             List<String> fiveLetterWords = fetcher.fetchFiveLetterUrduWords();
-            fetcher.saveToJson(fiveLetterWords, "urdu_5_letter_words.json");
+            fetcher.saveToJson(fiveLetterWords, "urdu_4_letter_words.json");
 
             System.out.println("✅ JSON file generated!");
-            System.out.println("Total 5-letter Urdu words: " + fiveLetterWords.size());
+            System.out.println("Total 4-letter Urdu words: " + fiveLetterWords.size());
 
             // Show first 15 words as example
             System.out.println("\nExample words:");

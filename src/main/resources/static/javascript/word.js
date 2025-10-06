@@ -144,20 +144,22 @@ document.getElementById("guess-form").addEventListener("submit", async (e) => {
 });
 
 // --- Show final result with WhatsApp share ---
+// --- Show final result with WhatsApp share ---
 function showResult(won) {
     gameOver = true;
 
     const overlay = document.createElement("div");
     overlay.classList.add("result-overlay");
 
+    // 🟩 Main message
     const message = won
-        ? `🎉 آپ نے ${currentRow + 1} کوششوں میں اندازہ لگایا!`
-        : `❌ کھیل ختم! لفظ تھا: ${word}`;
+        ? `🎉 آپ نے ${currentRow + 1} کوششوں میں درست لفظ کا اندازہ لگایا!`
+        : `❌ کھیل ختم! درست لفظ تھا: "${word}"`;
 
-    // Build share text (with guess grid)
+    // 🟨 Build share text (with guess grid)
     const shareText = won
         ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا! 🟩🟨⬜\n\n${resultsGrid.join('\n')}\n\nکوشش کریں: https://urdle.com`
-        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\nلفظ تھا: ${word}\n\n${resultsGrid.join('\n')}\n\nکوشش کریں: https://urdle.com`;
+        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\nدرست لفظ تھا: "${word}"\n\n${resultsGrid.join('\n')}\n\nکوشش کریں: https://urdle.com`;
 
     overlay.innerHTML = `
         <div class="result-box ${won ? 'success' : 'fail'}">
@@ -168,7 +170,7 @@ function showResult(won) {
 
     document.body.appendChild(overlay);
 
-    // Handle WhatsApp share
+    // WhatsApp share logic
     document.getElementById("share-btn").addEventListener("click", () => {
         const encoded = encodeURIComponent(shareText);
         window.open(`https://wa.me/?text=${encoded}`, "_blank");
@@ -177,3 +179,4 @@ function showResult(won) {
     // Disable further input
     document.querySelectorAll(".key").forEach(k => (k.disabled = true));
 }
+

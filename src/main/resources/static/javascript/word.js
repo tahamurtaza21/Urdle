@@ -45,8 +45,27 @@ keys.forEach(key => {
     });
 });
 
+async function validateWord(guess) {
+    try {
+        const res = await fetch(`/api/check-word?guess=${encodeURIComponent(guess)}`);
+        return await res.json();
+    } catch (err) {
+        console.error("Validation error:", err);
+        return false;
+    }
+}
+
+function showInvalidWordMessage(msg) {
+    const alert = document.createElement("div");
+    alert.textContent = msg;
+    alert.classList.add("invalid-alert");
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 2000);
+}
+
+
 // --- Handle guess submission ---
-document.getElementById("guess-form").addEventListener("submit", (e) => {
+document.getElementById("guess-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (gameOver) return;
 
@@ -57,6 +76,12 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
     }
 
     if (guess.length !== 5) return;
+
+    const valid = await validateWord(guess);
+    if (!valid) {
+        showInvalidWordMessage("یہ درست لفظ نہیں ہے");
+        return;
+    }
 
     const row = board.children[currentRow].children;
 
@@ -78,12 +103,12 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
             remaining[i] = null; // remove used letter
         } else {
             rowPattern += '?'; // temporary placeholder
-            rowLetters.push({ letter, cellIndex, index: i });
+            rowLetters.push({letter, cellIndex, index: i});
         }
     }
 
 // Step 2: Mark yellows / grays for the rest
-    for (const { letter, cellIndex, index } of rowLetters) {
+    for (const {letter, cellIndex, index} of rowLetters) {
         if (remaining.includes(letter)) {
             row[cellIndex].classList.add("present");
             rowPattern = replaceAt(rowPattern, index, '🟨');
@@ -98,7 +123,6 @@ document.getElementById("guess-form").addEventListener("submit", (e) => {
     function replaceAt(str, index, replacement) {
         return str.substring(0, index) + replacement + str.substring(index + 1);
     }
-
 
 
     resultsGrid.push(rowPattern);

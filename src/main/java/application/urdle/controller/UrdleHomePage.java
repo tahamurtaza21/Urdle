@@ -6,6 +6,8 @@ import org.json.JSONTokener;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -37,5 +39,22 @@ public class UrdleHomePage {
         Random random = new Random(seed);
         int index = random.nextInt(wordArray.length());
         return wordArray.getString(index);
+    }
+
+    @GetMapping("/api/check-word")
+    @ResponseBody
+    public boolean checkWord(@RequestParam String guess) throws Exception {
+        // Load your word list
+        InputStream input = getClass().getResourceAsStream("/static/words/urdu_5_letter_words.json");
+        JSONObject json = new JSONObject(new JSONTokener(input));
+        JSONArray words = json.getJSONArray("words");
+
+        // Normalize and compare
+        for (int i = 0; i < words.length(); i++) {
+            if (words.getString(i).equals(guess)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -69,49 +69,53 @@ function getCurrentGuess() {
 
 // ---------------- Input (RTL-aware) ----------------
 function handleLetter(letter) {
-    if (gameOver) return;
+    if (gameOver || isProcessing) return; // 🚫 block while processing
     if (currentCell >= 0) {
         const cell = rows[currentRow][currentCell];
         if (!cell.textContent) {
             cell.textContent = letter;
-            cell.classList.add("pop"); // 🔹 trigger animation
+            cell.classList.add("pop");
             setTimeout(() => cell.classList.remove("pop"), 150);
-            currentCell--; // move leftwards (RTL typing)
+            currentCell--;
         }
     }
 }
 
 
+
 function handleBackspace() {
-    if (gameOver) return;
+    if (gameOver || isProcessing) return; // 🚫 block while processing
     if (currentCell < WORD_LEN - 1) {
-        currentCell++; // move rightwards (undo last)
+        currentCell++;
         const cell = rows[currentRow][currentCell];
         cell.textContent = "";
         cell.classList.remove("correct", "present", "absent");
     }
 }
 
+
 async function handleEnter() {
-    if (gameOver || isProcessing) return; // 🧱 prevent double submit
-    if (currentCell !== -1) return;       // not full yet
+    if (gameOver || isProcessing) return;
+    if (currentCell !== -1) return;
 
     const guess = getCurrentGuess();
-    isProcessing = true;                  // 🔒 lock during processing
+    isProcessing = true;
+    toggleEnterButton(true); // optional visual dim
 
     const valid = await validateWord(guess);
     if (!valid) {
         showInvalidWordMessage("یہ درست لفظ نہیں ہے");
-        isProcessing = false;               // 🔓 unlock so player can try again
+        isProcessing = false;
+        toggleEnterButton(false);
         return;
     }
 
     colorizeRow(guess);
 
-    // wait until all tile flips are done before unlocking
     const totalDelay = WORD_LEN * 300 + 600;
     setTimeout(() => {
-        isProcessing = false;               // 🔓 unlock after animations
+        isProcessing = false;
+        toggleEnterButton(false);
     }, totalDelay);
 
     if (guess === targetWord) {
@@ -124,6 +128,7 @@ async function handleEnter() {
 
     if (currentRow >= MAX_ROWS) showResult(false);
 }
+
 
 
 // ---------------- Keyboard ----------------

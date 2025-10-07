@@ -343,14 +343,23 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Updated button styles for equal width */
+.result-box button {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 8px 0;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
 #restart-btn {
     background: #538d4e;
     color: white;
-    font-size: 16px;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
 }
 
 #restart-btn:hover {
@@ -361,15 +370,28 @@ h1 {
     background-color: #25D366;
     color: white;
     border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 12px;
 }
 
 #share-btn:hover {
     background-color: #1ebe5b;
+}
+
+#copy-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+#copy-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+#copy-feedback {
+    display: none;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4caf50;
 }
 
 /* ---------- Flip animation (RTL) ---------- */
@@ -418,7 +440,7 @@ h1 {
     perspective: 600px;
 }
 
-/* add gentle “settle” motion after flip */
+/* add gentle "settle" motion after flip */
 .cell.correct,
 .cell.present,
 .cell.absent {
@@ -469,13 +491,13 @@ h1 {
 
 .invalid-alert {
     position: absolute;
-    top: -40px;              /* 🔹 show near top of screen */
+    top: -40px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.9);
     color: #111;
     padding: 10px 20px;
-    font-size: 1.2rem;     /* 🔹 bigger text */
+    font-size: 1.2rem;
     font-weight: 600;
     border-radius: 8px;
     text-align: center;
@@ -493,4 +515,3 @@ h1 {
     85%  { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, -10px); }
 }
-

@@ -95,38 +95,62 @@ function handleBackspace() {
 
 
 async function handleEnter() {
+    // ✅ stop if already processing or game ended
     if (gameOver || isProcessing) return;
-    if (currentCell !== -1) return;
 
-    const guess = getCurrentGuess();
+    // ✅ build guess based on actual letters in current row
+    const guess = getCurrentGuess().trim();
+    if (guess.length < WORD_LEN) return; // not full yet
+
+    // ✅ lock further input
     isProcessing = true;
-    toggleEnterButton(true); // optional visual dim
+    toggleEnterButton(true);
 
-    const valid = await validateWord(guess);
-    if (!valid) {
-        showInvalidWordMessage("یہ درست لفظ نہیں ہے");
+    try {
+        const valid = await validateWord(guess);
+        if (!valid) {
+            showInvalidWordMessage("یہ درست لفظ نہیں ہے");
+            isProcessing = false;
+            toggleEnterButton(false);
+            return;
+        }
+
+        // ✅ process and animate
+        colorizeRow(guess);
+
+        // ✅ check win
+        if (guess === targetWord) {
+            showResult(true);
+            return;
+        }
+
+        // ✅ wait for animations to complete before allowing next row
+        const totalDelay = WORD_LEN * 300 + 600;
+        setTimeout(() => {
+            currentRow++;
+            currentCell = WORD_LEN - 1;
+            isProcessing = false;
+            toggleEnterButton(false);
+            if (currentRow >= MAX_ROWS) showResult(false);
+        }, totalDelay);
+    } catch (err) {
+        console.error("Error validating word:", err);
+        showInvalidWordMessage("لفظ چیک کرنے میں مسئلہ ہے");
         isProcessing = false;
         toggleEnterButton(false);
-        return;
     }
+}
 
-    colorizeRow(guess);
+// -------------------------------------------------------
+// 🔹 Dim or re-enable the Enter key while processing
+// -------------------------------------------------------
+function toggleEnterButton(disabled) {
+    const enterKey = document.querySelector('.key[data-action="enter"]');
+    if (!enterKey) return;
 
-    const totalDelay = WORD_LEN * 300 + 600;
-    setTimeout(() => {
-        isProcessing = false;
-        toggleEnterButton(false);
-    }, totalDelay);
-
-    if (guess === targetWord) {
-        showResult(true);
-        return;
-    }
-
-    currentRow++;
-    currentCell = WORD_LEN - 1;
-
-    if (currentRow >= MAX_ROWS) showResult(false);
+    enterKey.disabled = disabled;
+    enterKey.style.opacity = disabled ? "0.6" : "1";
+    enterKey.style.pointerEvents = disabled ? "none" : "auto";
 }
 
 
@@ -250,22 +274,56 @@ function showResult(won) {
         ? `🎉 آپ نے ${currentRow + 1} کوششوں میں درست لفظ کا اندازہ لگایا!`
         : `❌ کھیل ختم! درست لفظ تھا: "${targetWord}"`;
 
+    const emojiGrid = resultsGrid.join('\n');
+
     const shareText = won
-        ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا! 🟩🟨⬜\n\n${resultsGrid.join('\n')}\n\nکوشش کریں: https://urdle.com`
-        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\nدرست لفظ تھا: "${targetWord}"\n\n${resultsGrid.join('\n')}\n\nکوشش کریں: https://urdle.com`;
+        ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا!\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.com`
+        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.com`;
 
     overlay.innerHTML = `
     <div class="result-box ${won ? 'success' : 'fail'}">
       <p>${msg}</p>
       <button id="share-btn">📤 واٹس ایپ پر شیئر کریں</button>
+      <button id="copy-btn" style="margin-top: 10px;">📋 کاپی کریں</button>
+      <span id="copy-feedback" style="display:none; color: #4caf50; margin-top: 5px;">✓ کاپی ہو گیا!</span>
     </div>
   `;
     document.body.appendChild(overlay);
 
-    document.getElementById("share-btn").addEventListener("click", () => {
-        const encoded = encodeURIComponent(shareText);
-        window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    // Try Web Share API first (works better on mobile)
+    document.getElementById("share-btn").addEventListener("click", async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    text: shareText
+                });
+            } catch (err) {
+                // If sharing fails or is cancelled, fall back to WhatsApp URL
+                fallbackWhatsAppShare(shareText);
+            }
+        } else {
+            fallbackWhatsAppShare(shareText);
+        }
+    });
+
+    // Copy to clipboard option
+    document.getElementById("copy-btn").addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(shareText);
+            const feedback = document.getElementById("copy-feedback");
+            feedback.style.display = "inline";
+            setTimeout(() => feedback.style.display = "none", 2000);
+        } catch (err) {
+            alert("کاپی نہیں ہو سکا");
+        }
     });
 
     document.querySelectorAll(".key").forEach(k => (k.disabled = true));
+}
+
+function fallbackWhatsAppShare(text) {
+    // Use WhatsApp URL scheme with encoded text
+    const encoded = encodeURIComponent(text);
+    const whatsappUrl = `https://wa.me/?text=${encoded}`;
+    window.open(whatsappUrl, "_blank");
 }

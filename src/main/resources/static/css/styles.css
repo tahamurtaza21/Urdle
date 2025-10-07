@@ -50,10 +50,11 @@ h1 {
     justify-content: center;
     gap: clamp(4px, 2vw, 8px);
     margin-bottom: 20px;
-    flex-direction: row-reverse; /* important: rightmost first */
+    flex-direction: row-reverse; /* rightmost first */
     width: 100%;
     max-width: 300px;
 }
+
 .letter-input {
     width: clamp(40px, 12vw, 50px);
     height: clamp(40px, 12vw, 50px);
@@ -87,7 +88,7 @@ h1 {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    min-height: 44px; /* Minimum touch target for mobile */
+    min-height: 44px;
     min-width: 100px;
 }
 
@@ -110,7 +111,7 @@ h1 {
     justify-content: center;
     gap: clamp(4px, 2vw, 8px);
     margin-bottom: clamp(4px, 2vw, 8px);
-    flex-direction: row-reverse; /* rightmost first */
+    flex-direction: row-reverse;
 }
 
 .cell {
@@ -190,7 +191,6 @@ h1 {
     }
 }
 
-
 /* Landscape mobile */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     body {
@@ -208,24 +208,31 @@ h1 {
     }
 }
 
+/* -------------------- Keyboard -------------------- */
 
 .keyboard {
     margin-top: 20px;
     user-select: none;
     width: 100%;
     max-width: 500px;
+    overflow-x: auto; /* Allow scroll if needed */
+    padding-bottom: 8px;
 }
+
 .keyboard-row {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap; /* Let rows wrap if screen too small */
     gap: 6px;
     margin-bottom: 8px;
 }
+
 .key {
-    flex: 1;
-    max-width: 40px;
-    padding: 10px;
-    font-size: 18px;
+    flex: 1 1 8%; /* flexible width */
+    max-width: 60px;
+    min-width: 30px;
+    padding: 8px;
+    font-size: clamp(14px, 3.5vw, 18px);
     font-family: 'Noto Nastaliq Urdu', Arial, sans-serif;
     background: #3a3a3c;
     color: white;
@@ -235,28 +242,48 @@ h1 {
     text-align: center;
     transition: background-color 0.2s, border-color 0.2s;
 }
+
 .key:active {
     background: #565758;
 }
+
 .key.action {
-    flex: 1.5; /* Make backspace & enter wider */
+    flex: 1.5;
     max-width: 70px;
     background: #b59f3b;
     font-weight: bold;
 }
+
 .key.correct {
     background-color: #538d4e;
     border-color: #538d4e;
 }
+
 .key.present {
     background-color: #b59f3b;
     border-color: #b59f3b;
 }
+
 .key.absent {
     background-color: #3a3a3c;
     border-color: #3a3a3c;
     color: #888;
 }
+
+/* For very narrow phones */
+@media screen and (max-width: 360px) {
+    .keyboard-row {
+        gap: 3px;
+    }
+
+    .key {
+        flex: 1 1 9%;
+        font-size: 14px;
+        padding: 6px;
+    }
+}
+
+/* -------------------- Result Overlay -------------------- */
 
 .result {
     margin-top: 20px;
@@ -330,35 +357,6 @@ h1 {
     background: #4a7c44;
 }
 
-.result-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-}
-
-.result-box {
-    background: #fff;
-    color: #111;
-    border-radius: 12px;
-    padding: 25px 30px;
-    text-align: center;
-    max-width: 300px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-    direction: rtl;
-}
-
-.result-box.success p {
-    color: #16a34a;
-}
-
-.result-box.fail p {
-    color: #dc2626;
-}
-
 #share-btn {
     background-color: #25D366;
     color: white;
@@ -372,4 +370,35 @@ h1 {
 
 #share-btn:hover {
     background-color: #1ebe5b;
+}
+
+/* ---------- Flip animation (RTL) ---------- */
+
+@keyframes flipTile {
+    0% {
+        transform: rotateX(0);
+        background-color: #121213;
+    }
+    45% {
+        transform: rotateX(90deg);
+        background-color: #121213;
+    }
+    55% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0);
+    }
+}
+
+.cell.flip {
+    animation: flipTile 0.5s ease forwards;
+    transform-origin: center;
+    perspective: 600px;
+}
+
+.key.used {
+    background-color: #1a1a1b !important;
+    color: #666 !important;
+    border-color: #1a1a1b !important;
 }

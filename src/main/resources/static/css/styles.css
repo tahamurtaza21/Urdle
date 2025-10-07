@@ -374,6 +374,8 @@ h1 {
 
 /* ---------- Flip animation (RTL) ---------- */
 
+/* ---------- Smooth Flip Animation (RTL-friendly) ---------- */
+
 @keyframes flipTile {
     0% {
         transform: rotateX(0);
@@ -391,14 +393,104 @@ h1 {
     }
 }
 
+/* ---------- Letter pop animation when typing ---------- */
+
+@keyframes popIn {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.cell.pop {
+    animation: popIn 0.15s ease-out;
+}
+
+
 .cell.flip {
-    animation: flipTile 0.5s ease forwards;
+    animation: flipTile 0.55s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
     transform-origin: center;
     perspective: 600px;
 }
+
+/* add gentle “settle” motion after flip */
+.cell.correct,
+.cell.present,
+.cell.absent {
+    transition: transform 0.25s ease-out, background-color 0.25s ease-out;
+}
+
 
 .key.used {
     background-color: #1a1a1b !important;
     color: #666 !important;
     border-color: #1a1a1b !important;
 }
+
+/* -------- Keyboard key feedback animations -------- */
+
+/* Smooth fade when a key darkens */
+@keyframes fadeUsedKey {
+    0% {
+        background-color: #3a3a3c;
+        color: #fff;
+    }
+    100% {
+        background-color: #1b1b1c;
+        color: #777;
+    }
+}
+
+.key.used {
+    background-color: #1b1b1c !important;
+    color: #777 !important;
+    border-color: #1b1b1c !important;
+    animation: fadeUsedKey 0.3s ease forwards;
+}
+
+/* Optional: gentle pulse when a key turns correct/present */
+@keyframes keyReveal {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.key.correct,
+.key.present {
+    animation: keyReveal 0.25s ease;
+}
+
+/* ---------- Invalid word alert styling ---------- */
+
+.invalid-alert {
+    position: absolute;
+    top: -40px;              /* 🔹 show near top of screen */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    color: #111;
+    padding: 10px 20px;
+    font-size: 1.2rem;     /* 🔹 bigger text */
+    font-weight: 600;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    opacity: 0;
+    animation: fadeInOut 2s ease forwards;
+    pointer-events: none;
+}
+
+/* smooth fade in/out */
+@keyframes fadeInOut {
+    0%   { opacity: 0; transform: translate(-50%, -10px); }
+    15%  { opacity: 1; transform: translate(-50%, 0); }
+    85%  { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+

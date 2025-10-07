@@ -41,9 +41,15 @@ function showInvalidWordMessage(msg) {
     const alert = document.createElement("div");
     alert.textContent = msg;
     alert.classList.add("invalid-alert");
-    document.body.appendChild(alert);
+
+    // place it right above the board, not at bottom
+    const container = document.querySelector(".game-container");
+    container.style.position = "relative";
+    container.appendChild(alert);
+
     setTimeout(() => alert.remove(), 2000);
 }
+
 
 // Build guess string from cells in DOM order (consistent with coloring)
 function getCurrentGuess() {
@@ -64,10 +70,13 @@ function handleLetter(letter) {
         const cell = rows[currentRow][currentCell];
         if (!cell.textContent) {
             cell.textContent = letter;
-            currentCell--; // move leftwards (4→0)
+            cell.classList.add("pop"); // 🔹 trigger animation
+            setTimeout(() => cell.classList.remove("pop"), 150);
+            currentCell--; // move leftwards (RTL typing)
         }
     }
 }
+
 
 function handleBackspace() {
     if (gameOver) return;
@@ -125,8 +134,9 @@ document.querySelectorAll(".key").forEach(k => {
 function colorizeRow(guess) {
     const guessArr = Array.from(guess);
     const targetArr = Array.from(targetWord);
-    const cells = rows[currentRow].slice().reverse(); // right→left
+    const cells = rows[currentRow].slice().reverse(); // RTL
     const pattern = Array(WORD_LEN).fill("?");
+    const absentLetters = new Set();
 
     // Step 1 — mark greens
     for (let i = 0; i < WORD_LEN; i++) {
@@ -146,34 +156,74 @@ function colorizeRow(guess) {
             pattern[i] = "🟨";
         } else {
             pattern[i] = "⬜";
+            absentLetters.add(ch);
         }
     }
 
-    // Step 3 — animate reveal (right→left)
+    // Step 3 — flip animation
     cells.forEach((cell, i) => {
         setTimeout(() => {
             cell.classList.add("flip");
-
-            // wait mid-flip (≈ 250 ms) before colouring
             setTimeout(() => {
                 if (pattern[i] === "🟩") cell.classList.add("correct");
                 else if (pattern[i] === "🟨") cell.classList.add("present");
                 else cell.classList.add("absent");
             }, 250);
-        }, i * 300); // flip one by one right→left
+        }, i * 300);
     });
+
+    // ✅ Step 4 — darken absent keys AFTER all flips actually finished
+    const totalDelay = WORD_LEN * 300 + 400; // wait until all color classes applied
+    setTimeout(() => {
+        absentLetters.forEach(ch => {
+            const key = Array.from(document.querySelectorAll(".key")).find(k => {
+                const keyLetter = k.textContent.trim().normalize("NFC");
+                const guessLetter = ch.trim().normalize("NFC");
+                return keyLetter === guessLetter;
+            });
+
+            if (key) {
+                // only darken if it never became green or yellow
+                if (
+                    !key.classList.contains("correct") &&
+                    !key.classList.contains("present")
+                ) {
+                    key.classList.add("used");
+                }
+            }
+        });
+    }, totalDelay);
 
     resultsGrid.push(pattern.join(""));
 
-    /* 🟢 Helper to darken keyboard keys for absent letters */
-    function darkenKey(letter) {
-        const key = Array.from(document.querySelectorAll(".key"))
-            .find(k => k.textContent.trim() === letter);
-        if (key && !key.classList.contains("correct") && !key.classList.contains("present")) {
-            key.classList.add("used");
-        }
-    }
+    updateKeyboardKeys(guess, pattern);
+
 }
+
+// Simple tracker for keyboard usage
+function updateKeyboardKeys(guess, pattern) {
+    const allKeys = document.querySelectorAll(".key");
+
+    // mark every letter typed in this guess as used
+    Array.from(guess).forEach(ch => {
+        const key = Array.from(allKeys).find(k => k.textContent.trim() === ch);
+        if (key) key.classList.add("used");
+    });
+
+    // if any of them turned out to be correct or present, un-darken
+    Array.from(guess).forEach((ch, i) => {
+        const key = Array.from(allKeys).find(k => k.textContent.trim() === ch);
+        if (!key) return;
+        if (pattern[i] === "🟩") {
+            key.classList.remove("used");
+            key.classList.add("correct");
+        } else if (pattern[i] === "🟨") {
+            key.classList.remove("used");
+            key.classList.add("present");
+        }
+    });
+}
+
 
 
 function showResult(won) {

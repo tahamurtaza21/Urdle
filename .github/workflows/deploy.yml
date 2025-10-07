@@ -18,6 +18,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # ✅ Add this step to fix the "Permission denied" error
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
       - name: Build with Gradle
         run: ./gradlew build -x test
 

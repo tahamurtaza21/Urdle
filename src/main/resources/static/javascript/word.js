@@ -1,4 +1,8 @@
+let isProcessing = false; // 🚫 blocks multiple enter presses
+
+
 const board = document.getElementById("board");
+
 
 const WORD_LEN = 5;
 const MAX_ROWS = 6;
@@ -89,20 +93,26 @@ function handleBackspace() {
 }
 
 async function handleEnter() {
-    if (gameOver) return;
-
-    // ✅ Row is full only when we've filled all 5 letters (cursor = -1)
-    if (currentCell !== -1) return;
+    if (gameOver || isProcessing) return; // 🧱 prevent double submit
+    if (currentCell !== -1) return;       // not full yet
 
     const guess = getCurrentGuess();
+    isProcessing = true;                  // 🔒 lock during processing
 
     const valid = await validateWord(guess);
     if (!valid) {
         showInvalidWordMessage("یہ درست لفظ نہیں ہے");
+        isProcessing = false;               // 🔓 unlock so player can try again
         return;
     }
 
     colorizeRow(guess);
+
+    // wait until all tile flips are done before unlocking
+    const totalDelay = WORD_LEN * 300 + 600;
+    setTimeout(() => {
+        isProcessing = false;               // 🔓 unlock after animations
+    }, totalDelay);
 
     if (guess === targetWord) {
         showResult(true);
@@ -112,10 +122,9 @@ async function handleEnter() {
     currentRow++;
     currentCell = WORD_LEN - 1;
 
-    if (currentRow >= MAX_ROWS) {
-        showResult(false);
-    }
+    if (currentRow >= MAX_ROWS) showResult(false);
 }
+
 
 // ---------------- Keyboard ----------------
 document.querySelectorAll(".key").forEach(k => {

@@ -278,7 +278,7 @@ function showResult(won) {
 
     const shareText = won
         ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا!\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`
-        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.com`;
+        : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`;
 
     overlay.innerHTML = `
     <div class="result-box ${won ? 'success' : 'fail'}">

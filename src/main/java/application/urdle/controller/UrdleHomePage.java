@@ -3,20 +3,37 @@ package application.urdle.controller;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class UrdleHomePage {
 
     private final JSONArray wordArray;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final Map<String, Boolean> cache = new ConcurrentHashMap<>();
+
+//    private static final String[] WORDS = {
+//            "زندگی","انسان","قانون","تعلیم","حقیقت","حالات","تصویر","بازار","حکومت","عدالت",
+//            "عمارت","پرانی","کہانی","ستارہ","قدرتی","مدرسہ","رمضان","اخبار","خبریں","شاگرد",
+//            "استاد","مزدور","مضبوط","تجارت","ارادہ","احساس","تحریر","روایت","سیاست","طبیعت",
+//            "نظریہ","دہلیز","گلابی","قدیمی","کتابی","شوقین","کھڑکی","طالبہ","پرچمی","دفتری"
+//    };
+
 
     public UrdleHomePage() {
         // Load once from resources
@@ -43,18 +60,37 @@ public class UrdleHomePage {
 
     @GetMapping("/api/check-word")
     @ResponseBody
-    public boolean checkWord(@RequestParam String guess) throws Exception {
-        // Load your word list
-        InputStream input = getClass().getResourceAsStream("/static/words/urdu_5_letter_words.json");
-        JSONObject json = new JSONObject(new JSONTokener(input));
-        JSONArray words = json.getJSONArray("words");
-
-        // Normalize and compare
-        for (int i = 0; i < words.length(); i++) {
-            if (words.getString(i).equals(guess)) {
-                return true;
-            }
+    public boolean checkWord(@RequestParam String guess) {
+        // ✅ Only 5-letter words are valid in Urdle
+        if (guess == null || guess.trim().length() != 5) {
+            return false;
         }
-        return false;
+
+        // ✅ Cache to avoid hitting API repeatedly
+        if (cache.containsKey(guess)) {
+            return cache.get(guess);
+        }
+
+        try {
+            String url = "https://libretranslate.com/translate";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            String body = "q=" + guess + "&source=ur&target=en&format=text";
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            String translated = (String) response.getBody().get("translatedText");
+
+            // ✅ Word is valid if LibreTranslate returns a non-empty, different translation
+            boolean isValid = translated != null &&
+                    !translated.trim().isEmpty() &&
+                    !translated.trim().equalsIgnoreCase(guess.trim());
+
+            cache.put(guess, isValid);
+            return isValid;
+        } catch (Exception e) {
+            System.err.println("❌ LibreTranslate error: " + e.getMessage());
+            return false;
+        }
     }
 }

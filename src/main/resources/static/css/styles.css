@@ -228,20 +228,26 @@ h1 {
 }
 
 .key {
-    flex: 1 1 8%; /* flexible width */
+    flex: 1 1 8%;
     max-width: 60px;
     min-width: 30px;
-    padding: 8px;
-    font-size: clamp(14px, 3.5vw, 18px);
+    padding: 12px; /* unchanged */
+    font-size: clamp(20px, 4.5vw, 26px); /* noticeably bigger letters */
     font-family: 'Noto Nastaliq Urdu', Arial, sans-serif;
     background: #3a3a3c;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     text-align: center;
+    line-height: 1; /* tighter spacing helps Nastaliq stay centered */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     transition: background-color 0.2s, border-color 0.2s;
 }
+
+
 
 .key:active {
     background: #565758;

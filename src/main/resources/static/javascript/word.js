@@ -1,22 +1,19 @@
-let isProcessing = false; // 🚫 blocks multiple enter presses
-
+let isProcessing = false;
 
 const board = document.getElementById("board");
-
 
 const WORD_LEN = 5;
 const MAX_ROWS = 6;
 const targetWord = (typeof word === "string" ? word : "").trim();
 
 let currentRow = 0;
-// RTL typing: start at the visual rightmost in your setup
-let currentCell = WORD_LEN - 1;   // fill 4 → 0
+let currentCell = WORD_LEN - 1;
 let gameOver = false;
 
 const rows = [];
 const resultsGrid = [];
 
-// Build board 6×5
+// ---------------- Build Board ----------------
 for (let i = 0; i < MAX_ROWS; i++) {
     const row = document.createElement("div");
     row.classList.add("row");
@@ -35,7 +32,7 @@ for (let i = 0; i < MAX_ROWS; i++) {
 async function validateWord(guess) {
     try {
         const res = await fetch(`/api/check-word?guess=${encodeURIComponent(guess)}`);
-        return await res.json(); // expect true/false
+        return await res.json();
     } catch {
         return false;
     }
@@ -45,31 +42,24 @@ function showInvalidWordMessage(msg) {
     const alert = document.createElement("div");
     alert.textContent = msg;
     alert.classList.add("invalid-alert");
-
-    // place it right above the board, not at bottom
     const container = document.querySelector(".game-container");
     container.style.position = "relative";
     container.appendChild(alert);
-
     setTimeout(() => alert.remove(), 2000);
 }
 
-
-// Build guess string from cells in DOM order (consistent with coloring)
 function getCurrentGuess() {
-    // DOM order is left→right, but Urdu typing is right→left visually.
-    // So reverse the array before joining.
     const cells = rows[currentRow];
     return cells
-        .slice()          // copy
-        .reverse()        // rightmost first
-        .map(c => (c.textContent || "").trim())
+        .slice()
+        .reverse()
+        .map((c) => (c.textContent || "").trim())
         .join("");
 }
 
-// ---------------- Input (RTL-aware) ----------------
+// ---------------- Input ----------------
 function handleLetter(letter) {
-    if (gameOver || isProcessing) return; // 🚫 block while processing
+    if (gameOver || isProcessing) return;
     if (currentCell >= 0) {
         const cell = rows[currentRow][currentCell];
         if (!cell.textContent) {
@@ -81,10 +71,8 @@ function handleLetter(letter) {
     }
 }
 
-
-
 function handleBackspace() {
-    if (gameOver || isProcessing) return; // 🚫 block while processing
+    if (gameOver || isProcessing) return;
     if (currentCell < WORD_LEN - 1) {
         currentCell++;
         const cell = rows[currentRow][currentCell];
@@ -93,16 +81,12 @@ function handleBackspace() {
     }
 }
 
-
 async function handleEnter() {
-    // ✅ stop if already processing or game ended
     if (gameOver || isProcessing) return;
 
-    // ✅ build guess based on actual letters in current row
     const guess = getCurrentGuess().trim();
-    if (guess.length < WORD_LEN) return; // not full yet
+    if (guess.length < WORD_LEN) return;
 
-    // ✅ lock further input
     isProcessing = true;
     toggleEnterButton(true);
 
@@ -115,16 +99,14 @@ async function handleEnter() {
             return;
         }
 
-        // ✅ process and animate
         colorizeRow(guess);
+        saveProgress();
 
-        // ✅ check win
         if (guess === targetWord) {
             showResult(true);
             return;
         }
 
-        // ✅ wait for animations to complete before allowing next row
         const totalDelay = WORD_LEN * 300 + 600;
         setTimeout(() => {
             currentRow++;
@@ -141,22 +123,16 @@ async function handleEnter() {
     }
 }
 
-// -------------------------------------------------------
-// 🔹 Dim or re-enable the Enter key while processing
-// -------------------------------------------------------
 function toggleEnterButton(disabled) {
     const enterKey = document.querySelector('.key[data-action="enter"]');
     if (!enterKey) return;
-
     enterKey.disabled = disabled;
     enterKey.style.opacity = disabled ? "0.6" : "1";
     enterKey.style.pointerEvents = disabled ? "none" : "auto";
 }
 
-
-
 // ---------------- Keyboard ----------------
-document.querySelectorAll(".key").forEach(k => {
+document.querySelectorAll(".key").forEach((k) => {
     k.addEventListener("click", async () => {
         if (gameOver) return;
         const action = k.dataset.action;
@@ -168,15 +144,15 @@ document.querySelectorAll(".key").forEach(k => {
     });
 });
 
-// ---------------- Coloring & Results ----------------
+// ---------------- Coloring ----------------
 function colorizeRow(guess) {
     const guessArr = Array.from(guess);
     const targetArr = Array.from(targetWord);
-    const cells = rows[currentRow].slice().reverse(); // RTL
+    const cells = rows[currentRow].slice().reverse();
     const pattern = Array(WORD_LEN).fill("?");
     const absentLetters = new Set();
 
-    // Step 1 — mark greens
+    // greens
     for (let i = 0; i < WORD_LEN; i++) {
         if (guessArr[i] === targetArr[i]) {
             targetArr[i] = null;
@@ -184,7 +160,7 @@ function colorizeRow(guess) {
         }
     }
 
-    // Step 2 — mark yellows / grays
+    // yellows / grays
     for (let i = 0; i < WORD_LEN; i++) {
         if (pattern[i] !== "?") continue;
         const ch = guessArr[i];
@@ -198,7 +174,6 @@ function colorizeRow(guess) {
         }
     }
 
-    // Step 3 — flip animation
     cells.forEach((cell, i) => {
         setTimeout(() => {
             cell.classList.add("flip");
@@ -210,47 +185,34 @@ function colorizeRow(guess) {
         }, i * 300);
     });
 
-    // ✅ Step 4 — darken absent keys AFTER all flips actually finished
-    const totalDelay = WORD_LEN * 300 + 400; // wait until all color classes applied
+    const totalDelay = WORD_LEN * 300 + 400;
     setTimeout(() => {
-        absentLetters.forEach(ch => {
-            const key = Array.from(document.querySelectorAll(".key")).find(k => {
+        absentLetters.forEach((ch) => {
+            const key = Array.from(document.querySelectorAll(".key")).find((k) => {
                 const keyLetter = k.textContent.trim().normalize("NFC");
                 const guessLetter = ch.trim().normalize("NFC");
                 return keyLetter === guessLetter;
             });
-
-            if (key) {
-                // only darken if it never became green or yellow
-                if (
-                    !key.classList.contains("correct") &&
-                    !key.classList.contains("present")
-                ) {
-                    key.classList.add("used");
-                }
+            if (key && !key.classList.contains("correct") && !key.classList.contains("present")) {
+                key.classList.add("used");
             }
         });
     }, totalDelay);
 
     resultsGrid.push(pattern.join(""));
-
     updateKeyboardKeys(guess, pattern);
-
 }
 
-// Simple tracker for keyboard usage
 function updateKeyboardKeys(guess, pattern) {
     const allKeys = document.querySelectorAll(".key");
 
-    // mark every letter typed in this guess as used
-    Array.from(guess).forEach(ch => {
-        const key = Array.from(allKeys).find(k => k.textContent.trim() === ch);
+    Array.from(guess).forEach((ch) => {
+        const key = Array.from(allKeys).find((k) => k.textContent.trim() === ch);
         if (key) key.classList.add("used");
     });
 
-    // if any of them turned out to be correct or present, un-darken
     Array.from(guess).forEach((ch, i) => {
-        const key = Array.from(allKeys).find(k => k.textContent.trim() === ch);
+        const key = Array.from(allKeys).find((k) => k.textContent.trim() === ch);
         if (!key) return;
         if (pattern[i] === "🟩") {
             key.classList.remove("used");
@@ -262,10 +224,114 @@ function updateKeyboardKeys(guess, pattern) {
     });
 }
 
+// ---------------- Local Storage (Daily Progress) ----------------
+function getTodayKey() {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+}
 
+function getStorageKey() {
+    return `urdle-progress-${getTodayKey()}`;
+}
 
+function saveProgress() {
+    const keyboardState = {};
+    document.querySelectorAll(".key").forEach((k) => {
+        const letter = k.textContent.trim();
+        keyboardState[letter] = {
+            correct: k.classList.contains("correct"),
+            present: k.classList.contains("present"),
+            used: k.classList.contains("used"),
+        };
+    });
+
+    const boardState = rows.map((r) => r.map((c) => c.textContent || ""));
+    const state = {
+        date: getTodayKey(),
+        word: targetWord,
+        currentRow,
+        gameOver,
+        resultsGrid,
+        board: boardState,
+        keyboard: keyboardState,
+        completedRows: resultsGrid.length
+    };
+    localStorage.setItem(getStorageKey(), JSON.stringify(state));
+}
+
+function loadProgress() {
+    const saved = JSON.parse(localStorage.getItem(getStorageKey()) || "null");
+    if (!saved || saved.word !== targetWord) {
+        clearOldProgress();
+        return;
+    }
+
+    currentRow = saved.currentRow;
+    gameOver = saved.gameOver;
+    resultsGrid.push(...saved.resultsGrid);
+
+    saved.board.forEach((rowData, rIdx) => {
+        rowData.forEach((letter, cIdx) => {
+            rows[rIdx][cIdx].textContent = letter;
+        });
+    });
+
+    // ✅ Only recolor completed rows
+    for (let rIdx = 0; rIdx < (saved.completedRows || 0); rIdx++) {
+        const pattern = saved.resultsGrid[rIdx];
+        const cells = rows[rIdx].slice().reverse();
+        [...pattern].forEach((p, i) => {
+            if (p === "🟩") cells[i].classList.add("correct");
+            else if (p === "🟨") cells[i].classList.add("present");
+            else if (p === "⬜") cells[i].classList.add("absent");
+        });
+    }
+
+    // ✅ Restore keyboard colors
+    if (saved.keyboard) {
+        Object.entries(saved.keyboard).forEach(([letter, state]) => {
+            const key = Array.from(document.querySelectorAll(".key")).find(
+                (k) => k.textContent.trim() === letter
+            );
+            if (!key) return;
+            if (state.correct) key.classList.add("correct");
+            else if (state.present) key.classList.add("present");
+            else if (state.used) key.classList.add("used");
+        });
+    }
+
+    // ✅ Cursor recalculation / handle finished state
+    if (!saved.gameOver) {
+        if (saved.completedRows >= MAX_ROWS) {
+            gameOver = true;
+            showResult(resultsGrid.at(-1).includes("🟩"));
+        } else {
+            currentRow = saved.completedRows;
+            const nextRowCells = rows[currentRow];
+            const filledCount = nextRowCells.filter(
+                (c) => c.textContent && c.textContent.trim() !== ""
+            ).length;
+            currentCell = WORD_LEN - filledCount - 1; // ✅ RTL-safe
+            if (currentCell < 0) currentCell = 0;
+        }
+    } else {
+        gameOver = true;
+        showResult(resultsGrid.at(-1).includes("🟩"));
+    }
+}
+
+function clearOldProgress() {
+    Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith("urdle-progress-") && k !== getStorageKey()) {
+            localStorage.removeItem(k);
+        }
+    });
+}
+
+// ---------------- Results ----------------
 function showResult(won) {
     gameOver = true;
+    saveProgress();
 
     const overlay = document.createElement("div");
     overlay.classList.add("result-overlay");
@@ -274,14 +340,13 @@ function showResult(won) {
         ? `🎉 آپ نے ${currentRow + 1} کوششوں میں درست لفظ کا اندازہ لگایا!`
         : `❌ کھیل ختم! درست لفظ تھا: "${targetWord}"`;
 
-    const emojiGrid = resultsGrid.join('\n');
-
+    const emojiGrid = resultsGrid.join("\n");
     const shareText = won
         ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا!\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`
         : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`;
 
     overlay.innerHTML = `
-    <div class="result-box ${won ? 'success' : 'fail'}">
+    <div class="result-box ${won ? "success" : "fail"}">
       <p>${msg}</p>
       <button id="share-btn">📤 واٹس ایپ پر شیئر کریں</button>
       <button id="copy-btn" style="margin-top: 10px;">📋 کاپی کریں</button>
@@ -290,15 +355,11 @@ function showResult(won) {
   `;
     document.body.appendChild(overlay);
 
-    // Try Web Share API first (works better on mobile)
     document.getElementById("share-btn").addEventListener("click", async () => {
         if (navigator.share) {
             try {
-                await navigator.share({
-                    text: shareText
-                });
-            } catch (err) {
-                // If sharing fails or is cancelled, fall back to WhatsApp URL
+                await navigator.share({ text: shareText });
+            } catch {
                 fallbackWhatsAppShare(shareText);
             }
         } else {
@@ -306,24 +367,25 @@ function showResult(won) {
         }
     });
 
-    // Copy to clipboard option
     document.getElementById("copy-btn").addEventListener("click", async () => {
         try {
             await navigator.clipboard.writeText(shareText);
             const feedback = document.getElementById("copy-feedback");
             feedback.style.display = "inline";
-            setTimeout(() => feedback.style.display = "none", 2000);
-        } catch (err) {
+            setTimeout(() => (feedback.style.display = "none"), 2000);
+        } catch {
             alert("کاپی نہیں ہو سکا");
         }
     });
 
-    document.querySelectorAll(".key").forEach(k => (k.disabled = true));
+    document.querySelectorAll(".key").forEach((k) => (k.disabled = true));
 }
 
 function fallbackWhatsAppShare(text) {
-    // Use WhatsApp URL scheme with encoded text
     const encoded = encodeURIComponent(text);
     const whatsappUrl = `https://wa.me/?text=${encoded}`;
     window.open(whatsappUrl, "_blank");
 }
+
+// ---------------- Init ----------------
+window.addEventListener("DOMContentLoaded", loadProgress);

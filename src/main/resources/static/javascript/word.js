@@ -340,7 +340,12 @@ function showResult(won) {
         ? `🎉 آپ نے ${currentRow + 1} کوششوں میں درست لفظ کا اندازہ لگایا!`
         : `❌ کھیل ختم! درست لفظ تھا: "${targetWord}"`;
 
-    const emojiGrid = resultsGrid.join("\n");
+    // ✅ Reverse each row at emoji (grapheme) level so they don't break
+    const emojiGrid = resultsGrid
+        .map(row => Array.from(row).reverse().join(""))
+        .join("\n");
+
+
     const shareText = won
         ? `میں نے آج کا اردو ورڈل ${currentRow + 1} کوششوں میں حل کیا!\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`
         : `میں آج کا اردو ورڈل حل نہیں کر سکا 😔\n\n${emojiGrid}\n\nکوشش کریں: https://urdle.azurewebsites.net`;

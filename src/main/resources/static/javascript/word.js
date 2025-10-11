@@ -6,6 +6,28 @@ const WORD_LEN = 5;
 const MAX_ROWS = 6;
 const targetWord = (typeof word === "string" ? word : "").trim();
 
+// ---------------- Auto Reset on Redeploy ----------------
+(async () => {
+    try {
+        // Check if /word.js was modified since the user's last visit
+        const response = await fetch("/word.js", { method: "HEAD", cache: "no-cache" });
+        const lastModified = response.headers.get("last-modified") || Date.now().toString();
+
+        const savedVersion = localStorage.getItem("file-last-modified");
+        if (savedVersion !== lastModified) {
+            // Clear any stored daily progress from previous builds
+            Object.keys(localStorage).forEach((k) => {
+                if (k.startsWith("urdle-progress-")) localStorage.removeItem(k);
+            });
+            localStorage.setItem("file-last-modified", lastModified);
+            console.log("🧹 Cleared old Urdle progress due to redeploy");
+        }
+    } catch (e) {
+        console.warn("Could not check redeploy version:", e);
+    }
+})();
+
+
 let currentRow = 0;
 let currentCell = WORD_LEN - 1;
 let gameOver = false;

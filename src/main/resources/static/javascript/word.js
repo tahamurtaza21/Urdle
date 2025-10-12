@@ -2,7 +2,7 @@ let isProcessing = false;
 
 const board = document.getElementById("board");
 
-const WORD_LEN = 5;
+const WORD_LEN = 4;
 const MAX_ROWS = 6;
 const targetWord = (typeof word === "string" ? word : "").trim();
 

@@ -35,7 +35,17 @@ public class UrdleHomePage {
 
     private String getTodaysWord() {
         LocalDate today = LocalDate.now();
-        int seed = today.getYear() * 10000 + today.getMonthValue() * 100 + today.getDayOfMonth();
+
+        // Use toEpochDay() for a simpler, more reliable seed
+        // This gives days since 1970-01-01, which distributes better
+        long epochDay = today.toEpochDay();
+
+        // Apply a better hash to break sequential patterns
+        long seed = epochDay;
+        seed = (seed ^ (seed >>> 32)) * 0x85ebca6b;
+        seed = (seed ^ (seed >>> 16)) * 0xc2b2ae35;
+        seed = seed ^ (seed >>> 16);
+
         Random random = new Random(seed);
         int index = random.nextInt(wordArray.length());
         return wordArray.getString(index);
